@@ -107,4 +107,29 @@ abstract contract CustomCurveBase is BaseHook {
             afterRemoveLiquidityReturnDelta: false
         });
     }
+
+    /// @notice Add liquidity through the hook
+    /// @dev Not production-ready, only serves an example of hook-owned liquidity
+    function addLiquidity(PoolKey calldata key, uint256 amount0, uint256 amount1) external {
+        poolManager.unlock(
+            abi.encodeCall(this.handleAddLiquidity, (key.currency0, key.currency1, amount0, amount1, msg.sender))
+        );
+    }
+
+    /// @dev Handle liquidity addition by taking tokens from the sender and claiming ERC6909 to the hook address
+    function handleAddLiquidity(
+        Currency currency0,
+        Currency currency1,
+        uint256 amount0,
+        uint256 amount1,
+        address sender
+    ) external selfOnly returns (bytes memory) {
+        currency0.settle(poolManager, sender, amount0, false);
+        currency0.take(poolManager, address(this), amount0, true);
+
+        currency1.settle(poolManager, sender, amount1, false);
+        currency1.take(poolManager, address(this), amount1, true);
+
+        return abi.encode(amount0, amount1);
+    }
 }

@@ -33,11 +33,10 @@ contract ConstantSumCurveHookTest is Test, Deployers {
 
         // Deploy the hook to an address with the correct flags
         address flags = address(
-            uint160(
-                Hooks.BEFORE_ADD_LIQUIDITY_FLAG | Hooks.BEFORE_SWAP_FLAG | Hooks.BEFORE_SWAP_RETURNS_DELTA_FLAG
-            ) ^ (0x4444 << 144) // Namespace the hook to avoid collisions
+            uint160(Hooks.BEFORE_ADD_LIQUIDITY_FLAG | Hooks.BEFORE_SWAP_FLAG | Hooks.BEFORE_SWAP_RETURNS_DELTA_FLAG)
+                ^ (0x4444 << 144) // Namespace the hook to avoid collisions
         );
-        bytes memory constructorArgs = abi.encode(manager); //Add all the necessary constructor arguments from the hook
+        bytes memory constructorArgs = abi.encode(manager, currency1, currency0, 1_000_000e18); //Add all the necessary constructor arguments from the hook
         deployCodeTo("ConstantSumCurve.sol:ConstantSumCurve", constructorArgs, flags);
         hook = address(ConstantSumCurve(flags));
 
@@ -123,7 +122,7 @@ contract ConstantSumCurveHookTest is Test, Deployers {
 
     /// INTERNAL HELPER FUNCTIONS ///
 
-    function _printTestType(bool zeroForOne, int256 amountSpecified) internal {
+    function _printTestType(bool zeroForOne, int256 amountSpecified) internal pure {
         console2.log("--- TEST TYPE ---");
         string memory zeroForOneString = zeroForOne ? "zeroForOne" : "oneForZero";
         string memory swapType = amountSpecified < 0 ? "exactInput" : "exactOutput";
@@ -146,7 +145,7 @@ contract ConstantSumCurveHookTest is Test, Deployers {
         (key,) = initPoolAndAddLiquidity(currency0, currency1, IHooks(hook), 100, SQRT_PRICE_1_1);
     }
 
-    function _defaultTestSettings() internal returns (PoolSwapTest.TestSettings memory testSetting) {
+    function _defaultTestSettings() internal pure returns (PoolSwapTest.TestSettings memory testSetting) {
         return PoolSwapTest.TestSettings({takeClaims: false, settleUsingBurn: false});
     }
 
