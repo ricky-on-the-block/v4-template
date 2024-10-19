@@ -86,7 +86,7 @@ abstract contract CustomCurveBase is BaseHook {
         override
         returns (bytes4)
     {
-        revert("No v4 Liquidity allowed");
+        revert("No v4 liquidity allowed");
     }
 
     function getHookPermissions() public pure override returns (Hooks.Permissions memory) {
@@ -106,76 +106,5 @@ abstract contract CustomCurveBase is BaseHook {
             afterAddLiquidityReturnDelta: false,
             afterRemoveLiquidityReturnDelta: false
         });
-    }
-}
-
-contract LinearCurve is CustomCurveBase {
-    using CurrencySettler for Currency;
-
-    // For linear curve
-    // Price = slope * TokensSold + initialPrice
-    // More commonly: y = mx + b
-    uint256 immutable SLOPE;
-    uint256 immutable INITIAL_PRICE;
-
-    // For getting current price, we won't rely on PoolManager's liquidity to tell us
-    // Instead, we will rely on the number of tokens have sold, and our own linear bonding curve
-    uint256 public numTokensSold;
-    uint256 immutable NUM_TOKENS_OFFERED;
-
-    constructor(IPoolManager _manager, uint256 slope, uint256 initialPrice, uint256 numTokensOffered) CustomCurveBase(_manager) {
-        SLOPE = slope;
-        INITIAL_PRICE = initialPrice;
-        NUM_TOKENS_OFFERED = numTokensOffered;
-    }
-
-    function getAmountOutFromExactInput(uint256 amountIn, Currency, Currency, bool)
-        internal
-        pure
-        override
-        returns (uint256 amountOut)
-    {
-        // in constant-sum curve, tokens trade exactly 1:1
-        amountOut = amountIn;
-    }
-
-    function getAmountInForExactOutput(uint256 amountOut, Currency, Currency, bool)
-        internal
-        pure
-        override
-        returns (uint256 amountIn)
-    {
-        // in constant-sum curve, tokens trade exactly 1:1
-        amountIn = amountOut;
-    }
-
-    function calculateIntegral(uint256 x) internal view returns (uint256) {
-        // Integral of mx + b is (m/2)x^2 + bx
-        return (m.mul(x).mul(x).div(2).add(b.mul(x))).mul(PRECISION);
-    }
-
-    /// @notice Add liquidity through the hook
-    /// @dev Not production-ready, only serves an example of hook-owned liquidity
-    function addLiquidity(PoolKey calldata key, uint256 amount0, uint256 amount1) external {
-        poolManager.unlock(
-            abi.encodeCall(this.handleAddLiquidity, (key.currency0, key.currency1, amount0, amount1, msg.sender))
-        );
-    }
-
-    /// @dev Handle liquidity addition by taking tokens from the sender and claiming ERC6909 to the hook address
-    function handleAddLiquidity(
-        Currency currency0,
-        Currency currency1,
-        uint256 amount0,
-        uint256 amount1,
-        address sender
-    ) external selfOnly returns (bytes memory) {
-        currency0.settle(poolManager, sender, amount0, false);
-        currency0.take(poolManager, address(this), amount0, true);
-
-        currency1.settle(poolManager, sender, amount1, false);
-        currency1.take(poolManager, address(this), amount1, true);
-
-        return abi.encode(amount0, amount1);
     }
 }
