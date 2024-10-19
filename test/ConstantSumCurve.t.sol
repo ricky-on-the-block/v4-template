@@ -49,7 +49,7 @@ contract ConstantSumCurveHookTest is Test, Deployers {
         // Provide liquidity to the pair, so there are tokens we can take
         MockERC20(Currency.unwrap(currency0)).approve(address(hook), type(uint256).max);
         MockERC20(Currency.unwrap(currency1)).approve(address(hook), type(uint256).max);
-        ConstantSumCurve(hook).addLiquidity(key, 100e18, 100e18);
+        ConstantSumCurve(hook).addLiquidity(key, 88e18, 88e18);
     }
 
     function test_constantSumCurve_beforeSwap() public {
@@ -57,8 +57,8 @@ contract ConstantSumCurveHookTest is Test, Deployers {
         _setApprovalsFor(user, address(Currency.unwrap(key.currency1)));
 
         // Seeds liquidity into the hook.
-        key.currency0.transfer(address(hook), 10e18);
-        key.currency1.transfer(address(hook), 10e18);
+        // key.currency0.transfer(address(hook), 10e18);
+        // key.currency1.transfer(address(hook), 10e18);
 
         // Seeds liquidity into the user.
         key.currency0.transfer(address(user), 10e18);
@@ -66,10 +66,11 @@ contract ConstantSumCurveHookTest is Test, Deployers {
 
         uint256 userBalanceBefore0 = currency0.balanceOf(address(user));
         uint256 userBalanceBefore1 = currency1.balanceOf(address(user));
-        uint256 hookBalanceBefore0 = currency0.balanceOf(address(hook));
-        uint256 hookBalanceBefore1 = currency1.balanceOf(address(hook));
+        uint256 hookBalanceBefore0 = currency0.balanceOf(address(manager));
+        uint256 hookBalanceBefore1 = currency1.balanceOf(address(manager));
 
-        // TODO: Change swap amount. Note: Remember that if a hook is taking from the pool based on this amount, the pool must have at least this amount of liquidity.
+        // TODO: Change swap amount.
+        // Note: Remember that if a hook is taking from the pool based on this amount, the pool must have at least this amount of liquidity.
         uint256 amountToSwap = 1e6;
 
         // TODO: Change depending on what kind of swap you want.
@@ -102,9 +103,8 @@ contract ConstantSumCurveHookTest is Test, Deployers {
 
         uint256 userBalanceAfter0 = currency0.balanceOf(address(user));
         uint256 userBalanceAfter1 = currency1.balanceOf(address(user));
-
-        uint256 hookBalanceAfter0 = currency0.balanceOf(address(hook));
-        uint256 hookBalanceAfter1 = currency1.balanceOf(address(hook));
+        uint256 hookBalanceAfter0 = currency0.balanceOf(address(manager));
+        uint256 hookBalanceAfter1 = currency1.balanceOf(address(manager));
 
         console2.log("--- ENDING BALANCES ---");
         console2.log("User balance in currency0 after swapping: ", userBalanceAfter0);
