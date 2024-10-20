@@ -5,11 +5,10 @@ import "forge-std/Console.sol";
 import {BondingCurveHook} from "@main/BondingCurveHook.sol";
 import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 import {Currency} from "v4-core/src/types/Currency.sol";
-import {UD60x18, ud, unwrap, powu} from "@prb-math/UD60x18.sol";
 
 contract LinearCurveHook is BondingCurveHook {
-    UD60x18 public immutable slope;
-    UD60x18 public immutable initialPrice;
+    uint256 public immutable slope;
+    uint256 public immutable initialPrice;
 
     constructor(
         IPoolManager _poolManager,
@@ -19,26 +18,15 @@ contract LinearCurveHook is BondingCurveHook {
         uint256 _slope,
         uint256 _initialPrice
     ) BondingCurveHook(_poolManager, _tokenForSale, _tokenAccepted, _numTokensOffered) {
-        slope = ud(_slope);
-        initialPrice = ud(_initialPrice);
+        slope = _slope;
+        initialPrice = _initialPrice;
     }
 
-    function calculateIntegral(uint256 _x) public view returns (uint256) {
-        // Integral of mx + b is (m/2)x^2 + bx
-        console.log(_x);
-        console.log(UD60x18.unwrap(slope));
-        uint256 _slope = UD60x18.unwrap(slope);
-        uint256 _initialPrice = UD60x18.unwrap(initialPrice);
-        // UD60x18 x = ud(_x);
-        //console.log(x);
-        // return UD60x18.unwrap(slope.mul(powu(x, 2)).div(ud(2)).add(initialPrice.mul(x)));
-        // return (m.mul(x).mul(x).div(2).add(b.mul(x))).mul(PRECISION);
-        
-        return ((_slope * _x * _x) / 2) + (_initialPrice * _x);
+    function calculateIntegral(uint256 x) public view returns (uint256) {
+        return ((slope * x * x) / 2) + (initialPrice * x);
     }
 
     function buyFromBondingCurve(uint256 amountIn) internal view returns (uint256 amountOut) {
-        //UD60X18 currentIntegral = 
         return 0;
     }
 
@@ -87,7 +75,7 @@ contract LinearCurveHook is BondingCurveHook {
         amountIn = amountOut;
     }
 
-    function getCurrentPrice() external view override returns (UD60x18) {
-        return slope.mul(numTokensRemaining()).add(initialPrice);
+    function getCurrentPrice() external view override returns (uint256) {
+        return slope * numTokensRemaining() + initialPrice;
     }
 }

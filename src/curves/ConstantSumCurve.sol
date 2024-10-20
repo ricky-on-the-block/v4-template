@@ -6,7 +6,6 @@ import {BondingCurveHook} from "@main/BondingCurveHook.sol";
 import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 import {Currency} from "v4-core/src/types/Currency.sol";
 import {CurrencySettler} from "v4-core/test/utils/CurrencySettler.sol";
-import {UD60x18, ud} from "@prb-math/UD60x18.sol";
 
 contract ConstantSumCurve is BondingCurveHook {
     using CurrencySettler for Currency;
@@ -35,7 +34,7 @@ contract ConstantSumCurve is BondingCurveHook {
         amountIn = amountOut;
     }
 
-    function getCurrentPrice() external pure override returns (UD60x18) {
-        return ud(1);
+    function getCurrentPrice() external pure override returns (uint256) {
+        return 1;
     }
 }

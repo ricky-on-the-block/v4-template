@@ -9,14 +9,13 @@ pragma solidity ^0.8.20;
 import {CustomCurveBase} from "./CustomCurveBase.sol";
 import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 import {Currency} from "v4-core/src/types/Currency.sol";
-import {UD60x18, ud} from "@prb-math/UD60x18.sol";
 import {ERC20} from "solmate/src/tokens/ERC20.sol";
 
 abstract contract BondingCurveHook is CustomCurveBase {
     Currency public immutable tokenForSale;
     Currency public immutable tokenAccepted;
-    UD60x18 public totalPurchased;
-    UD60x18 public immutable numTokensOffered;
+    uint256 public totalPurchased;
+    uint256 public immutable numTokensOffered;
 
     constructor(IPoolManager _poolManager, Currency _tokenForSale, Currency _tokenAccepted, uint256 _numTokensOffered)
         CustomCurveBase(_poolManager)
@@ -25,13 +24,13 @@ abstract contract BondingCurveHook is CustomCurveBase {
 
         tokenForSale = _tokenForSale;
         tokenAccepted = _tokenAccepted;
-        numTokensOffered = ud(_numTokensOffered);
+        numTokensOffered = _numTokensOffered;
     }
 
-    function numTokensRemaining() public view returns (UD60x18) {
-        return numTokensOffered.sub(totalPurchased);
+    function numTokensRemaining() public view returns (uint256) {
+        return numTokensOffered - totalPurchased;
     }
 
     // Allows front-end to query the price
-    function getCurrentPrice() external view virtual returns (UD60x18);
+    function getCurrentPrice() external view virtual returns (uint256);
 }
