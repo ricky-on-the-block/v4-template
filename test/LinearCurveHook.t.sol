@@ -64,4 +64,10 @@ contract LinearCurveHookTest is PRBTest, StdCheats, Deployers {
         uint256 tokensSold = hook.calculateTokensSold(inputTokenAmount);
         console.log("tokensSold:", tokensSold);
     }
+
+    function testUnsignedPercentage() public {
+        UD60x18 one_hundred_eth = ud(100 ether);
+        UD60x18 fivePercent = ud(0.05e18);
+        console.log("one_hundred_eth * 5%", UD60x18.unwrap(one_hundred_eth.mul(fivePercent)));
+    }
 }
