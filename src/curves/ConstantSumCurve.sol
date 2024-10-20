@@ -14,24 +14,24 @@ contract ConstantSumCurve is BondingCurveHook {
         BondingCurveHook(_poolManager, _tokenForSale, _tokenAccepted, _numTokensOffered)
     {}
 
-    function getAmountOutFromExactInput(uint256 amountIn, Currency, Currency, bool)
+    function getAmountOutFromExactInput(uint256 _amountIn, Currency, Currency, bool)
         internal
         pure
         override
-        returns (uint256 amountOut)
+        returns (uint256 amountIn, uint256 amountOut)
     {
         // in constant-sum curve, tokens trade exactly 1:1
-        amountOut = amountIn;
+        return (_amountIn, _amountIn);
     }
 
-    function getAmountInForExactOutput(uint256 amountOut, Currency, Currency, bool)
+    function getAmountInForExactOutput(uint256 _amountOut, Currency, Currency, bool)
         internal
         pure
         override
-        returns (uint256 amountIn)
+        returns (uint256 amountIn, uint256 amountOut)
     {
         // in constant-sum curve, tokens trade exactly 1:1
-        amountIn = amountOut;
+        return (_amountOut, _amountOut);
     }
 
     function getCurrentPrice() external pure override returns (uint256) {

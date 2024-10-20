@@ -26,11 +26,12 @@ abstract contract CustomCurveBase is BaseHook {
     /// @param input the input token
     /// @param output the output token
     /// @param zeroForOne true if the input token is token0
+    /// @return amountIn  in the event that not all input is used, this is returned as the actual amount used
     /// @return amountOut the amount of output tokens
-    function getAmountOutFromExactInput(uint256 amountIn, Currency input, Currency output, bool zeroForOne)
+    function getAmountOutFromExactInput(uint256 _amountIn, Currency input, Currency output, bool zeroForOne)
         internal
         virtual
-        returns (uint256 amountOut);
+        returns (uint256 amountIn, uint256 amountOut);
 
     /// @notice Returns the amount of input tokens for an exact-output swap
     /// @param amountOut the amount of output tokens the user expects to receive
@@ -38,10 +39,11 @@ abstract contract CustomCurveBase is BaseHook {
     /// @param output the output token
     /// @param zeroForOne true if the input token is token0
     /// @return amountIn the amount of input tokens required to produce amountOut
-    function getAmountInForExactOutput(uint256 amountOut, Currency input, Currency output, bool zeroForOne)
+    /// @return amountOut in the event that not all output is met, this is returned as the actual amount used
+    function getAmountInForExactOutput(uint256 _amountOut, Currency input, Currency output, bool zeroForOne)
         internal
         virtual
-        returns (uint256 amountIn);
+        returns (uint256 amountIn, uint256 amountOut);
 
     /// @dev Facilitate a custom curve via beforeSwap + return delta
     /// @dev input tokens are taken from the PoolManager, creating a debt paid by the swapper
@@ -61,7 +63,8 @@ abstract contract CustomCurveBase is BaseHook {
         if (exactInput) {
             // in exact-input swaps, the specified token is a debt that gets paid down by the swapper
             // the unspecified token is credited to the PoolManager, that is claimed by the swapper
-            unspecifiedAmount = getAmountOutFromExactInput(specifiedAmount, specified, unspecified, params.zeroForOne);
+            (unspecifiedAmount, specifiedAmount) =
+                getAmountOutFromExactInput(specifiedAmount, specified, unspecified, params.zeroForOne);
             specified.take(poolManager, address(this), specifiedAmount, true);
             unspecified.settle(poolManager, address(this), unspecifiedAmount, true);
 
@@ -70,7 +73,8 @@ abstract contract CustomCurveBase is BaseHook {
             // exactOutput
             // in exact-output swaps, the unspecified token is a debt that gets paid down by the swapper
             // the specified token is credited to the PoolManager, that is claimed by the swapper
-            unspecifiedAmount = getAmountInForExactOutput(specifiedAmount, unspecified, specified, params.zeroForOne);
+            (specifiedAmount, unspecifiedAmount) =
+                getAmountInForExactOutput(specifiedAmount, unspecified, specified, params.zeroForOne);
             unspecified.take(poolManager, address(this), unspecifiedAmount, true);
             specified.settle(poolManager, address(this), specifiedAmount, true);
 

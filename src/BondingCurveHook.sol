@@ -14,8 +14,8 @@ import {ERC20} from "solmate/src/tokens/ERC20.sol";
 abstract contract BondingCurveHook is CustomCurveBase {
     Currency public immutable tokenForSale;
     Currency public immutable tokenAccepted;
-    uint256 public totalPurchased;
     uint256 public immutable numTokensOffered;
+    uint256 public numTokensSold;
 
     constructor(IPoolManager _poolManager, Currency _tokenForSale, Currency _tokenAccepted, uint256 _numTokensOffered)
         CustomCurveBase(_poolManager)
@@ -28,7 +28,7 @@ abstract contract BondingCurveHook is CustomCurveBase {
     }
 
     function numTokensRemaining() public view returns (uint256) {
-        return numTokensOffered - totalPurchased;
+        return numTokensOffered - numTokensSold;
     }
 
     // Allows front-end to query the price
