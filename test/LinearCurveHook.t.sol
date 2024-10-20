@@ -2,13 +2,19 @@
 pragma solidity ^0.8.20;
 
 import {Test} from "forge-std/Test.sol";
+import { StdCheats } from "forge-std/StdCheats.sol";
+
 // import "forge-std/Console.sol";
 import {console} from "forge-std/console.sol";
 import {LinearCurveHook} from "@main/curves/LinearCurveHook.sol";
 import {Hooks} from "v4-core/src/libraries/Hooks.sol";
 import {Deployers} from "v4-core/test/utils/Deployers.sol";
 
-contract LinearCurveHookTest is Test, Deployers {
+import { UD60x18, ud, convert } from "@prb/math/src/UD60x18.sol";
+import { PRBMathAssertions } from "@prb/math/test/utils/Assertions.sol";
+import { PRBTest } from "@prb/test/PRBTest.sol";
+
+contract LinearCurveHookTest is PRBTest, StdCheats, Deployers {
     LinearCurveHook public hook;
 
     function setUp() public {

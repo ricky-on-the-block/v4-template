@@ -14,11 +14,11 @@ import {BalanceDelta} from "v4-core/src/types/BalanceDelta.sol";
 import {SafeCast} from "v4-core/src/libraries/SafeCast.sol";
 import {Constants} from "v4-core/test/utils/Constants.sol";
 import {MockERC20} from "solmate/src/test/utils/mocks/MockERC20.sol";
-import {ConstantSumCurve} from "@main/curves/ConstantSumCurve.sol";
+import {ConstSumCurveHook} from "@main/curves/ConstSumCurveHook.sol";
 
 import "forge-std/console2.sol";
 
-contract ConstantSumCurveHookTest is Test, Deployers {
+contract ConstSumCurveHookTest is Test, Deployers {
     using SafeCast for *;
 
     // TODO: Initialize this test with your hook. You will pass in your hook implementation before each test to set this.
@@ -37,8 +37,8 @@ contract ConstantSumCurveHookTest is Test, Deployers {
                 ^ (0x4444 << 144) // Namespace the hook to avoid collisions
         );
         bytes memory constructorArgs = abi.encode(manager, currency1, currency0, 1_000_000e18); //Add all the necessary constructor arguments from the hook
-        deployCodeTo("ConstantSumCurve.sol:ConstantSumCurve", constructorArgs, flags);
-        hook = address(ConstantSumCurve(flags));
+        deployCodeTo("ConstSumCurveHook.sol:ConstSumCurveHook", constructorArgs, flags);
+        hook = address(ConstSumCurveHook(flags));
 
         // Create the pool
         key = PoolKey(currency0, currency1, 3000, 60, IHooks(hook));
@@ -48,7 +48,7 @@ contract ConstantSumCurveHookTest is Test, Deployers {
         // Provide liquidity to the pair, so there are tokens we can take
         MockERC20(Currency.unwrap(currency0)).approve(address(hook), type(uint256).max);
         MockERC20(Currency.unwrap(currency1)).approve(address(hook), type(uint256).max);
-        ConstantSumCurve(hook).addLiquidity(key, 88e18, 88e18);
+        ConstSumCurveHook(hook).addLiquidity(key, 88e18, 88e18);
     }
 
     function test_constantSumCurve_beforeSwap() public {
