@@ -65,7 +65,7 @@ abstract contract CustomCurveBase is BaseHook {
             // the unspecified token is credited to the PoolManager, that is claimed by the swapper
             (unspecifiedAmount, specifiedAmount) =
                 getAmountOutFromExactInput(specifiedAmount, specified, unspecified, params.zeroForOne);
-            
+
             specified.take(poolManager, address(this), specifiedAmount, true);
             unspecified.settle(poolManager, address(this), unspecifiedAmount, true);
 
@@ -76,7 +76,7 @@ abstract contract CustomCurveBase is BaseHook {
             // the specified token is credited to the PoolManager, that is claimed by the swapper
             (specifiedAmount, unspecifiedAmount) =
                 getAmountInForExactOutput(specifiedAmount, unspecified, specified, params.zeroForOne);
-            
+
             unspecified.take(poolManager, address(this), unspecifiedAmount, true);
             specified.settle(poolManager, address(this), specifiedAmount, true);
 

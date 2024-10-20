@@ -6,7 +6,7 @@ import {BondingCurveHook} from "@main/BondingCurveHook.sol";
 import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 import {Currency} from "v4-core/src/types/Currency.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-import { SD59x18, sd, convert } from "@prb/math/src/SD59x18.sol";
+import {SD59x18, sd, convert} from "@prb/math/src/SD59x18.sol";
 
 contract LinearCurveHook is BondingCurveHook {
     uint256 public immutable slope;
@@ -35,9 +35,9 @@ contract LinearCurveHook is BondingCurveHook {
         // a,b,c of quadratic formula (scaled for precision)
         SD59x18 a = sd(int256(slope));
         SD59x18 b = convert(2).mul(_initialPrice);
-        SD59x18 c = convert(-2).mul(_inputTokenAmount).sub(
-            a.mul(_numTokensSold).mul(_numTokensSold)).sub(
-                convert(2).mul(_initialPrice).mul(_numTokensSold));
+        SD59x18 c = convert(-2).mul(_inputTokenAmount).sub(a.mul(_numTokensSold).mul(_numTokensSold)).sub(
+            convert(2).mul(_initialPrice).mul(_numTokensSold)
+        );
 
         // Calculate the discriminant
         SD59x18 discriminant = b.mul(b).sub(convert(4).mul(a).mul(c));
