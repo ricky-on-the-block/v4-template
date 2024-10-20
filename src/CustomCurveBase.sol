@@ -1,8 +1,9 @@
+// NOTE: This file is kept as provided by Uniswap v4 Example Code
+// NOTE: New functionality is in BondingCurveHook.sol and curves/*.sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import {BaseHook} from "v4-periphery/src/base/hooks/BaseHook.sol";
-
 import {Hooks} from "v4-core/src/libraries/Hooks.sol";
 import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 import {PoolKey} from "v4-core/src/types/PoolKey.sol";
