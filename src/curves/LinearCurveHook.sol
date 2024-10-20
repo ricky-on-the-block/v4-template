@@ -6,6 +6,7 @@ import {BondingCurveHook} from "@main/BondingCurveHook.sol";
 import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 import {Currency} from "v4-core/src/types/Currency.sol";
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+import { SD59x18, sd, convert } from "@prb/math/src/SD59x18.sol";
 
 contract LinearCurveHook is BondingCurveHook {
     uint256 public immutable slope;
@@ -23,33 +24,35 @@ contract LinearCurveHook is BondingCurveHook {
         initialPrice = _initialPrice;
     }
 
+    // original impl returns: 4372135954999792963595
+    // prb-math returns: 4373253849269222075384
     function calculateTokensSold(uint256 inputTokenAmount) public view returns (uint256 outputTokenAmount) {
-        int256 _numTokensSold = int256(numTokensSold);
-        int256 _initialPrice = int256(initialPrice);
-        int256 _inputTokenAmount = int256(inputTokenAmount);
-
-        uint256 PRECISION = 1e18;
+        SD59x18 test = sd(int256(numTokensSold));
+        SD59x18 _numTokensSold = sd(int256(numTokensSold));
+        SD59x18 _initialPrice = sd(int256(initialPrice));
+        SD59x18 _inputTokenAmount = sd(int256(inputTokenAmount));
 
         // a,b,c of quadratic formula (scaled for precision)
-        int256 a = int256(slope);
-        int256 b = 2 * _initialPrice;
-        int256 c = (-2 * _inputTokenAmount * int256(PRECISION))
-            - (a * _numTokensSold * _numTokensSold / int256(PRECISION))
-            - (2 * _initialPrice * _numTokensSold / int256(PRECISION));
+        SD59x18 a = sd(int256(slope));
+        SD59x18 b = convert(2).mul(_initialPrice);
+        SD59x18 c = convert(-2).mul(_inputTokenAmount).sub(
+            a.mul(_numTokensSold).mul(_numTokensSold)).sub(
+                convert(2).mul(_initialPrice).mul(_numTokensSold));
 
         // Calculate the discriminant
-        int256 discriminant = b * b / int256(PRECISION) - 4 * a * c / int256(PRECISION);
-        require(discriminant >= 0, "No real solutions exist");
+        SD59x18 discriminant = b.mul(b).sub(convert(4).mul(a).mul(c));
+        require(discriminant.gte(convert(0)), "No real solutions exist");
 
         // Calculate the square root of the discriminant
-        uint256 sqrtDiscriminant = Math.sqrt(uint256(discriminant));
+        SD59x18 sqrtDiscriminant = discriminant.sqrt();
 
         // Calculate the two possible solutions
-        int256 solution1 = (-b + int256(sqrtDiscriminant)) * int256(PRECISION) / (2 * a);
-        int256 solution2 = (-b - int256(sqrtDiscriminant)) * int256(PRECISION) / (2 * a);
+        SD59x18 solution1 = (b.mul(convert(-1)).add(sqrtDiscriminant)).div(convert(2).mul(a)); //(-b + int256(sqrtDiscriminant)) / (2 * a);
+        SD59x18 solution2 = (b.mul(convert(-1)).sub(sqrtDiscriminant)).div(convert(2).mul(a)); //(-b - int256(sqrtDiscriminant)) / (2 * a);
 
         // Return the larger solution (assuming we want to maximize tokens sold)
-        return uint256(solution1 > solution2 ? solution1 : solution2);
+        return uint256(SD59x18.unwrap(solution1 > solution2 ? solution1 : solution2));
+        //return uint256(solution1 > solution2 ? solution1 : solution2);
     }
 
     function calculateIntegral(uint256 x) public view returns (uint256) {
